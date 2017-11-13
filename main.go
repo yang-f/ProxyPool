@@ -1,18 +1,24 @@
 package main
 
 import (
-	"log"
 	"runtime"
 	"sync"
 	"time"
 
-	"github.com/henson/ProxyPool/api"
-	"github.com/henson/ProxyPool/getter"
-	"github.com/henson/ProxyPool/models"
-	"github.com/henson/ProxyPool/storage"
+	"github.com/go-playground/log"
+	"github.com/go-playground/log/handlers/console"
+	"github.com/yang-f/ProxyPool/api"
+	"github.com/yang-f/ProxyPool/getter"
+	"github.com/yang-f/ProxyPool/models"
+	"github.com/yang-f/ProxyPool/storage"
 )
 
 func main() {
+
+	cLog := console.New()
+
+	log.RegisterHandler(cLog, log.AllLevels...)
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	ipChan := make(chan *models.IP, 2000)
 	conn := storage.NewStorage()
@@ -52,10 +58,10 @@ func run(ipChan chan<- *models.IP) {
 	funs := []func() []*models.IP{
 		getter.Data5u,
 		getter.IP66,
-		getter.KDL,
+		//getter.KDL,
 		getter.GBJ,
-		getter.Xici,
-		getter.XDL,
+		//getter.Xici,
+		//getter.XDL,
 		getter.IP181,
 		//getter.YDL,		//失效的采集脚本，用作系统容错实验
 		getter.PLP,

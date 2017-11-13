@@ -1,13 +1,13 @@
 package getter
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 //PLP get ip from proxylistplus.com

@@ -1,42 +1,46 @@
 package storage
 
 import (
-	"github.com/henson/ProxyPool/models"
-	"github.com/henson/ProxyPool/util"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	"encoding/json"
+	"github.com/fzzy/radix/redis"
+	"github.com/go-playground/log"
+	"github.com/yang-f/ProxyPool/models"
+	"github.com/yang-f/ProxyPool/util"
+	"time"
 )
 
 // Config 全局配置文件
 var Config = util.NewConfig()
 
 // GlobalMgoSession 全局连接Session
-var GlobalMgoSession, _ = mgo.Dial(string(Config.Mongo.Addr))
 
 // Storage struct is used for storeing persistent data of alerts
 type Storage struct {
-	database string
-	table    string
-	session  *mgo.Session
 }
 
 // NewStorage creates and returns new Storage instance
 func NewStorage() *Storage {
-	return &Storage{database: Config.Mongo.DB, table: Config.Mongo.Table, session: GlobalMgoSession}
+	return &Storage{}
 }
 
 // GetDBSession returns a new connection from the pool
-func (s *Storage) GetDBSession() *mgo.Session {
-	return s.session.Clone()
+func (s *Storage) GetDBSession() *redis.Client {
+	client, _ := redis.DialTimeout("tcp", Config.Redis.Addr, time.Duration(10)*time.Second)
+	return client
 }
 
 // Create insert new item
-func (s *Storage) Create(item interface{}) error {
+func (s *Storage) Create(ip *models.IP) error {
+	log.Printf("Create:%v", ip)
 	ses := s.GetDBSession()
 	defer ses.Close()
-	err := ses.DB(s.database).C(s.table).Insert(item)
+	value, err := json.Marshal(ip)
 	if err != nil {
 		return err
+	}
+	r := ses.Cmd("HMSET", Config.Redis.Key, ip.Data, string(value))
+	if r.Err != nil {
+		return r.Err
 	}
 	return nil
 }
@@ -45,8 +49,9 @@ func (s *Storage) Create(item interface{}) error {
 func (s *Storage) GetOne(value string) (*models.IP, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
+	ls, err := ses.Cmd("mget", value).List()
 	t := models.NewIP()
-	err := ses.DB(s.database).C(s.table).Find(bson.M{"data": value}).One(t)
+	err = json.Unmarshal([]byte(ls[0]), &t)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +62,8 @@ func (s *Storage) GetOne(value string) (*models.IP, error) {
 func (s *Storage) Count() int {
 	ses := s.GetDBSession()
 	defer ses.Close()
-	num, err := ses.DB(s.database).C(s.table).Count()
+	r := ses.Cmd("HLEN", Config.Redis.Key)
+	num, err := r.Int()
 	if err != nil {
 		num = 0
 	}
@@ -68,9 +74,9 @@ func (s *Storage) Count() int {
 func (s *Storage) Delete(ip *models.IP) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
-	err := ses.DB(s.database).C(s.table).RemoveId(ip.ID)
-	if err != nil {
-		return err
+	r := ses.Cmd("HDEL", Config.Redis.Key, ip.Data)
+	if r.Err != nil {
+		return r.Err
 	}
 	return nil
 }
@@ -79,9 +85,13 @@ func (s *Storage) Delete(ip *models.IP) error {
 func (s *Storage) Update(ip *models.IP) error {
 	ses := s.GetDBSession()
 	defer ses.Close()
-	err := ses.DB(s.database).C(s.table).Update(bson.M{"_id": ip.ID}, ip)
+	value, err := json.Marshal(ip)
 	if err != nil {
 		return err
+	}
+	r := ses.Cmd("HMSET", Config.Redis.Key, ip.Data, string(value))
+	if r.Err != nil {
+		return r.Err
 	}
 	return nil
 }
@@ -91,21 +101,29 @@ func (s *Storage) GetAll() ([]*models.IP, error) {
 	ses := s.GetDBSession()
 	defer ses.Close()
 	var ips []*models.IP
-	err := ses.DB(s.database).C(s.table).Find(nil).All(&ips)
+	ls, err := ses.Cmd("HVALS", Config.Redis.Key).List()
 	if err != nil {
 		return nil, err
+	}
+	ips = []*models.IP{}
+	for _, ipData := range ls {
+		ip := models.NewIP()
+		err = json.Unmarshal([]byte(ipData), &ip)
+		if err != nil {
+			return nil, err
+		}
+		ips = append(ips, ip)
 	}
 	return ips, nil
 }
 
-// FindAll .
-func (s *Storage) FindAll(value string) ([]*models.IP, error) {
-	ses := s.GetDBSession()
-	defer ses.Close()
-	var ips []*models.IP
-	err := ses.DB(s.database).C(s.table).Find(bson.M{"type": bson.M{"$regex": value, "$options": "$i"}}).All(&ips)
-	if err != nil {
-		return nil, err
-	}
-	return ips, nil
-}
+//func (s *Storage) FindAll(value string) ([]*models.IP, error) {
+//	ses := s.GetDBSession()
+//	defer ses.Close()
+//	var ips []*models.IP
+//	err := ses.DB(s.database).C(s.table).Find(bson.M{"type": bson.M{"$regex": value, "$options": "$i"}}).All(&ips)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return ips, nil
+//}

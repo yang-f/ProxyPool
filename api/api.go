@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/henson/ProxyPool/storage"
-	"github.com/henson/ProxyPool/util"
+	"github.com/yang-f/ProxyPool/storage"
+	"github.com/yang-f/ProxyPool/util"
 )
 
 // VERSION for this program

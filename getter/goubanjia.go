@@ -1,14 +1,14 @@
 package getter
 
 import (
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // GBJ get ip from goubanjia.com

@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
 	"github.com/nladuo/go-phantomjs-fetcher"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // XDL get ip from xdaili.cn

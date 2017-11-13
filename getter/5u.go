@@ -1,12 +1,12 @@
 package getter
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // Data5u get ip from data5u.com

@@ -1,11 +1,11 @@
 package getter
 
 import (
-	"log"
 	"strings"
 
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // IP66 get ip from 66ip.cn

@@ -1,11 +1,10 @@
 package getter
 
 import (
-	"log"
-
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // IP181 get ip from ip181.com

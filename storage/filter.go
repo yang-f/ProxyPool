@@ -1,13 +1,13 @@
 package storage
 
 import (
-	"log"
 	"math/rand"
 	"sync"
 	"time"
 
-	"github.com/henson/ProxyPool/models"
+	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // CheckProxy .
@@ -69,7 +69,7 @@ func ProxyRandom() (ip *models.IP) {
 func ProxyFind(value string) (ip *models.IP) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	conn := NewStorage()
-	ips, _ := conn.FindAll(value)
+	ips, _ := conn.GetAll()
 	x := len(ips)
 
 	return ips[r.Intn(x)]

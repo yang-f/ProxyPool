@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/henson/ProxyPool/models"
 	"github.com/nladuo/go-phantomjs-fetcher"
+	"github.com/yang-f/ProxyPool/models"
 )
 
 // KDL get ip from kuaidaili.com
 func KDL() (result []*models.IP) {
-	pollURL := "http://www.kuaidaili.com/proxylist/"
+	pollURL := "http://www.kuaidaili.com/proxylist/" //now http://www.kuaidaili.com/free/
 	//create a fetcher which seems to a httpClient
 	fetcher, err := phantomjs.NewFetcher(2016, nil)
 	defer fetcher.ShutDownPhantomJSServer()

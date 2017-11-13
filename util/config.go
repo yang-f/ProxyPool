@@ -9,6 +9,7 @@ import (
 // Config struct defines the config structure
 type Config struct {
 	Mongo MongoConfig `json:"mongo"`
+	Redis RedisConfig `json:"redis"`
 	Host  string      `json:"host"`
 }
 
@@ -18,6 +19,12 @@ type MongoConfig struct {
 	DB    string `json:"db"`
 	Table string `json:"table"`
 	Event string `json:"event"`
+}
+
+// RedisConfig has config values for Redis
+type RedisConfig struct {
+	Addr string `json:"addr"`
+	Key  string `json:"key"`
 }
 
 // NewConfig parses config file and return Config struct
@@ -31,6 +38,5 @@ func NewConfig() *Config {
 	if err != nil {
 		panic(err)
 	}
-
 	return config
 }
