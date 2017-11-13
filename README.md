@@ -21,19 +21,11 @@
 
 　　用定时的计划任务去检测数据库中代理IP的可用性，删除不可用的代理。同时也会主动通过Getter去获取最新代理；
 
-* Api：
-
-　　代理池的访问接口，提供get接口输出JSON，方便爬虫直接使用。
-
 ### 2、代码实现
-
-* Api：
-
-　　api接口相关代码，提供`get`接口，输出JSON；
 
 * Storage：
 
-　　数据库相关代码，数据库采用Mongo；
+　　数据库相关代码，数据库采用Redis；
 
 * Getter：
 
@@ -63,12 +55,10 @@
 
 ```
 {
-    "mongo": {
-        "addr": "mongodb://127.0.0.1:27017/",
-        "db": "temp",
-        "table": "pool"
-    },
-    "host": ":8080"
+    "redis": {
+        "addr": "127.0.0.1:6379",
+        "key": "proxy_ips"
+    }
 }
 ```
 
@@ -94,18 +84,6 @@ go get -u github.com/henson/ProxyPool
 go build
 ./ProxyPool
 ```
-
-随机输出可用的代理：
-```
-GET http://localhost:8080/v1/ip
-```
-![HTTP](pics/http.png)
-
-随机输出HTTPS代理：
-```
-GET http://localhost:8080/v1/https
-```
-![HTTPS](pics/https.png)
 
 ### 4、添加自定义代理采集接口
 
