@@ -1,7 +1,6 @@
 {
     "redis": {
         "addr": "127.0.0.1:6379",
-        "key":"proxy_ips"
-    },
-    "host": ":8080"
+        "key": "proxy_ips"
+    }
 }

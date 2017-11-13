@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-playground/log"
 	"github.com/go-playground/log/handlers/console"
-	"github.com/yang-f/ProxyPool/api"
 	"github.com/yang-f/ProxyPool/getter"
 	"github.com/yang-f/ProxyPool/models"
 	"github.com/yang-f/ProxyPool/storage"
@@ -23,15 +22,6 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	ipChan := make(chan *models.IP, 2000)
 	filter := storage.NewFilter(util.NewConfig())
-	// Start HTTP
-	go func() {
-		api.Run(filter)
-	}()
-
-	// Check the IPs in DB
-	go func() {
-		filter.CheckProxyDB()
-	}()
 
 	// Check the IPs in channel
 	for i := 0; i < 50; i++ {
@@ -46,6 +36,9 @@ func main() {
 	for {
 		x := filter.Storage.Count()
 		log.Printf("Chan: %v, IP: %v\n", len(ipChan), x)
+		go func() {
+			filter.CheckProxyDB()
+		}()
 		if len(ipChan) < 100 {
 			go run(ipChan)
 		}

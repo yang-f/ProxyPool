@@ -8,17 +8,7 @@ import (
 
 // Config struct defines the config structure
 type Config struct {
-	Mongo MongoConfig `json:"mongo"`
 	Redis RedisConfig `json:"redis"`
-	Host  string      `json:"host"`
-}
-
-// MongoConfig has config values for Mongo
-type MongoConfig struct {
-	Addr  string `json:"addr"`
-	DB    string `json:"db"`
-	Table string `json:"table"`
-	Event string `json:"event"`
 }
 
 // RedisConfig has config values for Redis
