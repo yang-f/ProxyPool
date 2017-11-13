@@ -11,6 +11,7 @@ import (
 	"github.com/yang-f/ProxyPool/getter"
 	"github.com/yang-f/ProxyPool/models"
 	"github.com/yang-f/ProxyPool/storage"
+	"github.com/yang-f/ProxyPool/util"
 )
 
 func main() {
@@ -21,30 +22,29 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	ipChan := make(chan *models.IP, 2000)
-	conn := storage.NewStorage()
-
+	filter := storage.NewFilter(util.NewConfig())
 	// Start HTTP
 	go func() {
-		api.Run()
+		api.Run(filter)
 	}()
 
 	// Check the IPs in DB
 	go func() {
-		storage.CheckProxyDB()
+		filter.CheckProxyDB()
 	}()
 
 	// Check the IPs in channel
 	for i := 0; i < 50; i++ {
 		go func() {
 			for {
-				storage.CheckProxy(<-ipChan)
+				filter.CheckProxy(<-ipChan)
 			}
 		}()
 	}
 
 	// Start getters to scraper IP and put it in channel
 	for {
-		x := conn.Count()
+		x := filter.Storage.Count()
 		log.Printf("Chan: %v, IP: %v\n", len(ipChan), x)
 		if len(ipChan) < 100 {
 			go run(ipChan)

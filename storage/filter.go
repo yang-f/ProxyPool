@@ -8,17 +8,26 @@ import (
 	"github.com/go-playground/log"
 	"github.com/parnurzeal/gorequest"
 	"github.com/yang-f/ProxyPool/models"
+	"github.com/yang-f/ProxyPool/util"
 )
 
+type Filter struct {
+	Storage *Storage
+}
+
+func NewFilter(conf *util.Config) *Filter {
+	return &Filter{Storage: NewStorage(conf)}
+}
+
 // CheckProxy .
-func CheckProxy(ip *models.IP) {
-	if CheckIP(ip) {
-		ProxyAdd(ip)
+func (f *Filter) CheckProxy(ip *models.IP) {
+	if f.CheckIP(ip) {
+		f.ProxyAdd(ip)
 	}
 }
 
 // CheckIP is to check the ip work or not
-func CheckIP(ip *models.IP) bool {
+func (f *Filter) CheckIP(ip *models.IP) bool {
 	pollURL := "http://httpbin.org/get"
 	resp, _, errs := gorequest.New().Proxy("http://" + ip.Data).Get(pollURL).End()
 	if errs != nil {
@@ -31,11 +40,10 @@ func CheckIP(ip *models.IP) bool {
 }
 
 // CheckProxyDB to check the ip in DB
-func CheckProxyDB() {
-	conn := NewStorage()
-	x := conn.Count()
+func (f *Filter) CheckProxyDB() {
+	x := f.Storage.Count()
 	log.Println("Before check, DB has:", x, "records.")
-	ips, err := conn.GetAll()
+	ips, err := f.Storage.GetAll()
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -44,50 +52,46 @@ func CheckProxyDB() {
 	for _, v := range ips {
 		wg.Add(1)
 		go func(v *models.IP) {
-			if !CheckIP(v) {
-				ProxyDel(v)
+			if !f.CheckIP(v) {
+				f.ProxyDel(v)
 			}
 			wg.Done()
 		}(v)
 	}
 	wg.Wait()
-	x = conn.Count()
+	x = f.Storage.Count()
 	log.Println("After check, DB has:", x, "records.")
 }
 
 // ProxyRandom .
-func ProxyRandom() (ip *models.IP) {
+func (f *Filter) ProxyRandom() (ip *models.IP) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	conn := NewStorage()
-	ips, _ := conn.GetAll()
+	ips, _ := f.Storage.GetAll()
 	x := len(ips)
 
 	return ips[r.Intn(x)]
 }
 
 // ProxyFind .
-func ProxyFind(value string) (ip *models.IP) {
+func (f *Filter) ProxyFind(value string) (ip *models.IP) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	conn := NewStorage()
-	ips, _ := conn.GetAll()
+	ips, _ := f.Storage.FindAll(value)
 	x := len(ips)
 
 	return ips[r.Intn(x)]
 }
 
 // ProxyAdd .
-func ProxyAdd(ip *models.IP) {
-	conn := NewStorage()
-	_, err := conn.GetOne(ip.Data)
+func (f *Filter) ProxyAdd(ip *models.IP) {
+	_, err := f.Storage.GetOne(ip.Data)
 	if err != nil {
-		conn.Create(ip)
+		f.Storage.Create(ip)
 	}
 }
 
 // ProxyDel .
-func ProxyDel(ip *models.IP) {
-	conn := NewStorage()
-	if err := conn.Delete(ip); err != nil {
+func (f *Filter) ProxyDel(ip *models.IP) {
+	if err := f.Storage.Delete(ip); err != nil {
 		log.Println(err.Error())
 	}
 }

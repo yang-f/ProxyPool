@@ -12,8 +12,11 @@ import (
 // VERSION for this program
 const VERSION = "/v1"
 
+var filter *storage.Filter
+
 // Run for request
-func Run() {
+func Run(f *storage.Filter) {
+	filter = f
 	mux := http.NewServeMux()
 	mux.HandleFunc(VERSION+"/ip", ProxyHandler)
 	mux.HandleFunc(VERSION+"/https", FindHandler)
@@ -25,7 +28,7 @@ func Run() {
 func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("content-type", "application/json")
-		b, err := json.Marshal(storage.ProxyRandom())
+		b, err := json.Marshal(filter.ProxyRandom())
 		if err != nil {
 			return
 		}
@@ -37,7 +40,7 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 func FindHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("content-type", "application/json")
-		b, err := json.Marshal(storage.ProxyFind("https"))
+		b, err := json.Marshal(filter.ProxyFind("https"))
 		if err != nil {
 			return
 		}
