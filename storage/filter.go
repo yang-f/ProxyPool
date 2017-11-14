@@ -48,14 +48,25 @@ func (f *Filter) CheckProxyDB() {
 		log.Println(err.Error())
 		return
 	}
+
+	workersCount := 10
+	workers := make(chan int, workersCount)
+	for i := 0; i < workersCount; i++ {
+		workers <- 1
+	}
+
 	var wg sync.WaitGroup
 	for _, v := range ips {
 		wg.Add(1)
+		<-workers
 		go func(v *models.IP) {
+			defer func() {
+				workers <- 1
+				wg.Done()
+			}()
 			if !f.CheckIP(v) {
 				f.ProxyDel(v)
 			}
-			wg.Done()
 		}(v)
 	}
 	wg.Wait()
