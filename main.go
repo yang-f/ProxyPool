@@ -24,7 +24,7 @@ func main() {
 	proxy := proxy.NewProxy(util.NewConfig())
 
 	// Check the IPs in channel
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 30; i++ {
 		go func() {
 			for {
 				proxy.CheckProxy(<-ipChan)
@@ -42,7 +42,7 @@ func main() {
 		if len(ipChan) < 100 {
 			go run(ipChan)
 		}
-		time.Sleep(10 * time.Minute)
+		time.Sleep(30 * time.Minute)
 	}
 }
 
