@@ -9,7 +9,7 @@ import (
 	"github.com/go-playground/log/handlers/console"
 	"github.com/yang-f/ProxyPool/getter"
 	"github.com/yang-f/ProxyPool/models"
-	"github.com/yang-f/ProxyPool/storage"
+	"github.com/yang-f/ProxyPool/proxy"
 	"github.com/yang-f/ProxyPool/util"
 )
 
@@ -21,23 +21,23 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	ipChan := make(chan *models.IP, 2000)
-	filter := storage.NewFilter(util.NewConfig())
+	proxy := proxy.NewProxy(util.NewConfig())
 
 	// Check the IPs in channel
 	for i := 0; i < 50; i++ {
 		go func() {
 			for {
-				filter.CheckProxy(<-ipChan)
+				proxy.CheckProxy(<-ipChan)
 			}
 		}()
 	}
 
 	// Start getters to scraper IP and put it in channel
 	for {
-		x := filter.Storage.Count()
+		x := proxy.Storage.Count()
 		log.Printf("Chan: %v, IP: %v\n", len(ipChan), x)
 		go func() {
-			filter.CheckProxyDB()
+			proxy.CheckProxyDB()
 		}()
 		if len(ipChan) < 100 {
 			go run(ipChan)
