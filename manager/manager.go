@@ -197,7 +197,15 @@ func (m *ProxyManager) Run() {
 func runGetter(ipChan chan<- *models.IP) {
 	var wg sync.WaitGroup
 	funs := []func() []*models.IP{
-		getter.Zhima,
+		getter.Data5u,
+		getter.IP66,
+		getter.KDL,
+		getter.GBJ,
+		getter.Xici,
+		getter.XDL,
+		getter.IP181,
+		//getter.YDL,		//失效的采集脚本，用作系统容错实验
+		getter.PLP,
 	}
 	for _, f := range funs {
 		wg.Add(1)
